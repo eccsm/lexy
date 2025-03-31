@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:voice_notes/database/models/note.dart';
-import 'package:voice_notes/features/notes/notes_controller.dart';
-import 'package:voice_notes/shared/widgets/app_bar.dart';
-import 'package:voice_notes/shared/widgets/custom_button.dart';
+import 'package:drift/drift.dart' hide Column;
+import 'notes_controller.dart';
+import '../../shared/widgets/app_bar.dart';
+import '../../shared/widgets/custom_button.dart';
 
 class NoteEditScreen extends ConsumerStatefulWidget {
   final String noteId;
@@ -21,12 +21,15 @@ class NoteEditScreen extends ConsumerStatefulWidget {
 class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
-  int? _selectedCategoryId;
+  // Initialize with null Value
+  late Value<int?> _selectedCategoryId;
   bool _isSaving = false;
   
   @override
   void initState() {
     super.initState();
+    // Initialize with a default value
+    _selectedCategoryId = const Value(null);
     _loadNote();
   }
   
@@ -46,7 +49,9 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
       setState(() {
         _titleController.text = noteWithCategory.note.title;
         _contentController.text = noteWithCategory.note.content;
-        _selectedCategoryId = noteWithCategory.note.categoryId;
+        // Safely handle the categoryId
+        final categoryId = noteWithCategory.note.categoryId;
+        _selectedCategoryId = categoryId != null ? Value(categoryId) : const Value(null);
       });
     }
   }
@@ -74,7 +79,7 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
       final updatedNote = noteWithCategory.note.copyWith(
         title: _titleController.text.trim(),
         content: _contentController.text.trim(),
-        categoryId: _selectedCategoryId,
+        categoryId: Value(_selectedCategoryId.value),
         updatedAt: DateTime.now(),
         isSynced: false,
       );
@@ -143,7 +148,7 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
                     border: OutlineInputBorder(),
                     prefixIcon: Icon(Icons.category),
                   ),
-                  value: _selectedCategoryId,
+                  value: _selectedCategoryId.value,
                   items: [
                     const DropdownMenuItem<int?>(
                       value: null,
@@ -171,7 +176,7 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
                   ],
                   onChanged: (value) {
                     setState(() {
-                      _selectedCategoryId = value;
+                      _selectedCategoryId = value != null ? Value(value) : const Value(null);
                     });
                   },
                 );

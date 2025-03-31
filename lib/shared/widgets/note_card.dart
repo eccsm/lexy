@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../database/daos/note_dao.dart';
+import '../../database/app_database.dart';
 import '../utils/date_formatter.dart';
 
 

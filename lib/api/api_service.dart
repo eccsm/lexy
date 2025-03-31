@@ -2,15 +2,16 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logger/logger.dart';
 
 import '../database/models/note.dart';
 import 'models/note.dart';
 import 'models/transcription_response.dart';
 
-
 class ApiService {
   final Dio _dio;
   final String _baseUrl;
+  final Logger _logger = Logger();
   
   ApiService({required Dio dio, required String baseUrl})
       : _dio = dio,
@@ -57,7 +58,7 @@ class ApiService {
       
       return TranscriptionResponse.fromJson(response.data);
     } catch (e) {
-      print('Error transcribing audio: $e');
+      _logger.e('Error transcribing audio: $e');
       throw Exception('Failed to transcribe audio: $e');
     }
   }
@@ -78,7 +79,7 @@ class ApiService {
       
       return ApiNote.fromJson(response.data);
     } catch (e) {
-      print('Error syncing note: $e');
+      _logger.e('Error syncing note: $e');
       throw Exception('Failed to sync note: $e');
     }
   }
@@ -92,7 +93,7 @@ class ApiService {
         .map((data) => ApiNote.fromJson(data))
         .toList();
     } catch (e) {
-      print('Error fetching notes: $e');
+      _logger.e('Error fetching notes: $e');
       throw Exception('Failed to fetch notes: $e');
     }
   }
@@ -104,7 +105,7 @@ class ApiService {
       
       return ApiNote.fromJson(response.data);
     } catch (e) {
-      print('Error fetching note: $e');
+      _logger.e('Error fetching note: $e');
       throw Exception('Failed to fetch note: $e');
     }
   }
@@ -114,7 +115,7 @@ class ApiService {
     try {
       await _dio.delete('/api/notes/$id');
     } catch (e) {
-      print('Error deleting note: $e');
+      _logger.e('Error deleting note: $e');
       throw Exception('Failed to delete note: $e');
     }
   }

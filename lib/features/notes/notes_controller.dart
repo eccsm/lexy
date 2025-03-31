@@ -1,9 +1,9 @@
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-
+import 'package:drift/drift.dart';
+import 'package:logger/logger.dart';
 import '../../database/app_database.dart';
-import '../../database/daos/note_dao.dart';
+
+final Logger _logger = Logger();
 
 // Search term state
 final searchTermProvider = StateProvider<String>((ref) => '');
@@ -16,7 +16,20 @@ final notesProvider = FutureProvider<List<NoteWithCategory>>((ref) async {
   if (searchTerm.isEmpty) {
     return database.noteDao.getAllNotesWithCategory();
   } else {
-    return database.noteDao.searchNotes(searchTerm);
+    // When searching, we need to join the notes with categories manually
+    final notes = await database.noteDao.searchNotes(searchTerm);
+    final List<NoteWithCategory> result = [];
+    
+    for (final note in notes) {
+      Category? category;
+      if (note.categoryId != null) {
+        category = await database.categoryDao.getCategoryById(note.categoryId!);
+      }
+      
+      result.add(NoteWithCategory(note: note, category: category));
+    }
+    
+    return result;
   }
 });
 
@@ -29,7 +42,7 @@ final noteProvider = FutureProvider.family<NoteWithCategory, String>((ref, id) a
 // Notes by category provider
 final notesByCategoryProvider = FutureProvider.family<List<NoteWithCategory>, int>((ref, categoryId) async {
   final database = ref.watch(databaseProvider);
-  return database.noteDao.getNotesByCategory(categoryId);
+  return database.noteDao.getNotesByCategoryWithData(categoryId);
 });
 
 // Categories provider
@@ -52,6 +65,24 @@ class NotesController {
     await _database.noteDao.updateNote(note);
   }
   
+  Future<int> createNote({
+    required String title,
+    required String content,
+    String? audioPath,
+    int? categoryId
+  }) async {
+    return await _database.noteDao.insertNote(
+      NotesCompanion.insert(
+        title: title,
+        content: content,
+        audioPath: Value(audioPath),
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        categoryId: Value(categoryId),
+      )
+    );
+  }
+  
   Future<void> syncNotes() async {
     final unsyncedNotes = await _database.noteDao.getUnsyncedNotes();
     
@@ -64,8 +95,7 @@ class NotesController {
           note.copyWith(isSynced: true),
         );
       } catch (e) {
-        // Handle sync error
-        print('Failed to sync note ${note.id}: $e');
+        _logger.e('Failed to sync note ${note.id}: $e');
       }
     }
   }

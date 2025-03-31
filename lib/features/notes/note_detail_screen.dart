@@ -156,10 +156,6 @@ class NoteDetailScreen extends ConsumerWidget {
   
   void _shareNote(BuildContext context, WidgetRef ref) async {
     try {
-      final note = await ref.read(noteProvider(noteId).future);
-      
-      final content = '${note.note.title}\n\n${note.note.content}';
-      
       // Using the share package
       // Share.share(content, subject: note.note.title);
       

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
+import 'package:drift/drift.dart' hide Column;
 
 import '../../database/app_database.dart';
 import '../../shared/widgets/app_bar.dart';
@@ -125,7 +125,7 @@ class CategoriesScreen extends ConsumerWidget {
             CategoriesCompanion.insert(
               name: name,
               color: color,
-              icon: icon,
+              icon: Value(icon), // Wrap with Value
             ),
           );
           
@@ -149,7 +149,7 @@ class CategoriesScreen extends ConsumerWidget {
             category.copyWith(
               name: name,
               color: color,
-              icon: icon,
+              icon: Value(icon), // Wrap with Value
             ),
           );
           
@@ -181,8 +181,8 @@ class CategoriesScreen extends ConsumerWidget {
               // Refresh categories
               ref.invalidate(categoriesProvider);
             },
-            child: const Text('Delete'),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
           ),
         ],
       ),

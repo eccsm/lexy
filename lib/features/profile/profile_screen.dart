@@ -12,7 +12,7 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final userAsync = ref.watch(userProvider);
+    final userAsync = ref.watch(authControllerProvider);
     final themeMode = ref.watch(themeModeProvider);
     
     return Scaffold(
@@ -23,12 +23,46 @@ class ProfileScreen extends ConsumerWidget {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: userAsync?.when(
-            child: userAsync.hasValue
-              ? _buildProfileContent(userAsync.value)
-              : userAsync.hasError
-              ? Center(child: Text('Error: ${userAsync.error}'))
-              : const Center(child: CircularProgressIndicator()),
+          child: userAsync.when(
+            data: (user) {
+              if (user == null) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('You are not signed in'),
+                      const SizedBox(height: 16),
+                      CustomButton(
+                        onPressed: () => context.go('/login'),
+                        text: 'Sign In',
+                      ),
+                    ],
+                  ),
+                );
+              }
+              
+              return Column(
+                children: [
+                  // User avatar
+                  CircleAvatar(
+                    radius: 50,
+                    backgroundColor: Theme.of(context).primaryColor.withOpacity(0.2),
+                    child: user.photoURL != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(50),
+                            child: Image.network(
+                              user.photoURL!,
+                              width: 100,
+                              height: 100,
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        : Icon(
+                            Icons.person,
+                            size: 50,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                  ),
                   
                   const SizedBox(height: 16),
                   

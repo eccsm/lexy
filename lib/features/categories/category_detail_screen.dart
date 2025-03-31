@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:voice_notes/features/notes/notes_controller.dart';
-import 'package:voice_notes/shared/widgets/app_bar.dart';
-import 'package:voice_notes/shared/widgets/note_card.dart';
+
+
+import '../../database/app_database.dart';
+import '../../shared/widgets/app_bar.dart';
+import '../../shared/widgets/note_card.dart';
+import '../notes/notes_controller.dart';
 
 class CategoryDetailScreen extends ConsumerWidget {
   final int categoryId;
