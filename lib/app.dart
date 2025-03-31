@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'providers.dart';
+import 'routes.dart';
+import 'shared/theme/app_theme.dart';
+
 
 class VoiceNotesApp extends ConsumerWidget {
   const VoiceNotesApp({super.key});

@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../shared/widgets/app_bar.dart';
+import '../../shared/widgets/audio_visualizer.dart';
+import '../../shared/widgets/record_button.dart';
+import '../../shared/widgets/timer_display.dart';
+import 'recording_controller.dart';
+
 
 class RecordingScreen extends ConsumerStatefulWidget {
   const RecordingScreen({super.key});

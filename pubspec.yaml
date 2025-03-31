@@ -50,6 +50,10 @@ dependencies:
   share_plus: ^7.2.2
   url_launcher: ^6.2.5
   logger: ^2.0.2+1
+
+  # Routing
+
+  go_router: ^14.8.1
   
 dev_dependencies:
   flutter_test:
