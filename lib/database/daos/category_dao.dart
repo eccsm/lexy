@@ -1,6 +1,4 @@
 // File: lib/database/daos/category_dao.dart
-import 'package:drift/drift.dart';
-import 'package:flutter/foundation.dart';
 import 'package:voicenotes/database/app_database.dart';
 import 'package:voicenotes/database/models/note.dart';
 
@@ -35,11 +33,10 @@ class CategoryDao extends DatabaseAccessor<AppDatabase> with _$CategoryDaoMixin 
     return (delete(categories)..where((c) => c.id.equals(id))).go();
   }
   
-  // Get note count by category
   Future<int> getNoteCountByCategory(int categoryId) async {
-    final query = selectCount(notes);
-    query.where((note) => note.categoryId.equals(categoryId));
-    final result = await query.getSingle();
-    return result;
-  }
+  final query = select(notes)
+    ..where((note) => note.categoryId.equals(categoryId));
+  
+  return query.get().asStream().length;
+}
 }

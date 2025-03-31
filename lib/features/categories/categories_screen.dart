@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:voice_notes/database/app_database.dart';
-import 'package:voice_notes/features/categories/category_dialog.dart';
-import 'package:voice_notes/features/notes/notes_controller.dart';
-import 'package:voice_notes/shared/widgets/app_bar.dart';
+
+
+import '../../database/app_database.dart';
+import '../../shared/widgets/app_bar.dart';
+import '../notes/notes_controller.dart';
+import 'category_dialog.dart';
 
 class CategoriesScreen extends ConsumerWidget {
   const CategoriesScreen({super.key});

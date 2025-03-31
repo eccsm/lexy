@@ -61,7 +61,7 @@ class NotesListScreen extends ConsumerWidget {
                       return Padding(
                         padding: const EdgeInsets.only(right: 8.0),
                         child: FilterChip(
-                          label: Text(category?.name),
+                          label: Text(category.name),
                           selected: selectedCategoryFilter == category.id,
                           backgroundColor: Color(category.color).withOpacity(0.1),
                           selectedColor: Color(category.color).withOpacity(0.3),

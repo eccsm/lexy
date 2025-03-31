@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:voice_notes/features/auth/auth_controller.dart';
-import 'package:voice_notes/shared/widgets/custom_button.dart';
+
+import '../../shared/widgets/custom_button.dart';
+import 'auth_controller.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});

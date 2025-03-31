@@ -23,49 +23,12 @@ class ProfileScreen extends ConsumerWidget {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: userAsync.when(
-            data: (user) {
-              if (user == null) {
-                // Not logged in
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        'You are not logged in',
-                        style: TextStyle(fontSize: 18),
-                      ),
-                      const SizedBox(height: 24),
-                      CustomButton(
-                        onPressed: () => context.go('/login'),
-                        text: 'Log In',
-                      ),
-                    ],
-                  ),
-                );
-              }
-              
-              // Logged in
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 16),
-                  
-                  // Profile picture
-                  CircleAvatar(
-                    radius: 50,
-                    backgroundColor: Theme.of(context).primaryColor.withOpacity(0.2),
-                    backgroundImage: user.photoURL != null
-                        ? NetworkImage(user.photoURL!)
-                        : null,
-                    child: user.photoURL == null
-                        ? Icon(
-                            Icons.person,
-                            size: 50,
-                            color: Theme.of(context).primaryColor,
-                          )
-                        : null,
-                  ),
+          child: userAsync?.when(
+            child: userAsync.hasValue
+              ? _buildProfileContent(userAsync.value)
+              : userAsync.hasError
+              ? Center(child: Text('Error: ${userAsync.error}'))
+              : const Center(child: CircularProgressIndicator()),
                   
                   const SizedBox(height: 16),
                   

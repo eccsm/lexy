@@ -70,9 +70,9 @@ class ApiService {
         data: {
           'title': note.title,
           'content': note.content,
-          'createdAt': note.createdAt.toIso8601String(),
-          'updatedAt': note.updatedAt.toIso8601String(),
-          if (note.categoryId != null) 'categoryId': note.categoryId,
+          'createdAt': note.createdAt.toString(),
+          'updatedAt': note.updatedAt.toString(),
+          'categoryId': note.categoryId,
         },
       );
       
