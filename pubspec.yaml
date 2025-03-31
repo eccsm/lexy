@@ -1,12 +1,12 @@
 name: voicenotes
-description: "A Flutter project."
+description: "A Flutter project for voice notes."
 
 publish_to: 'none' 
 
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.5.4
+  sdk: '>=3.5.4 <4.0.0'
 
 dependencies:
   flutter:
@@ -50,9 +50,9 @@ dependencies:
   share_plus: ^7.2.2
   url_launcher: ^6.2.5
   logger: ^2.0.2+1
+  package_info_plus: ^5.0.1
 
   # Routing
-
   go_router: ^14.8.1
   
 dev_dependencies:
@@ -75,5 +75,3 @@ flutter:
     - assets/images/
     - assets/animations/
     - assets/icons/
-
- 

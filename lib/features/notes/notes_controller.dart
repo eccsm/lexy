@@ -1,7 +1,12 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:voice_notes/api/api_service.dart';
 import 'package:voice_notes/database/app_database.dart';
 import 'package:voice_notes/database/models/note.dart';
+
+import '../../api/api_service.dart';
+import '../../database/app_database.dart';
+import '../../database/daos/note_dao.dart';
 
 // Search term state
 final searchTermProvider = StateProvider<String>((ref) => '');

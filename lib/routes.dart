@@ -12,8 +12,7 @@ import 'features/profile/profile_screen.dart';
 import 'features/recording/recording_screen.dart';
 import 'features/settings/settings_screen.dart';
 
-
-final routerProvider = Provider<GoRouter>((ref) {
+GoRouter createRouter(ProviderRef ref) {
   return GoRouter(
     initialLocation: '/notes',
     routes: [
@@ -88,4 +87,4 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
     ),
   );
-});
+}

@@ -1,10 +1,12 @@
+// File: lib/database/daos/category_dao.dart
 import 'package:drift/drift.dart';
-import 'package:voice_notes/database/app_database.dart';
-import 'package:voice_notes/database/models/note.dart';
+import 'package:flutter/foundation.dart';
+import 'package:voicenotes/database/app_database.dart';
+import 'package:voicenotes/database/models/note.dart';
 
-part 'category_dao.g.dart';
+part 'category_dao.g.dart';  // Note: this should point to the same folder
 
-@DriftAccessor(tables: [Categories])
+@DriftAccessor(tables: [Categories, Notes])
 class CategoryDao extends DatabaseAccessor<AppDatabase> with _$CategoryDaoMixin {
   CategoryDao(AppDatabase db) : super(db);
   
@@ -35,8 +37,8 @@ class CategoryDao extends DatabaseAccessor<AppDatabase> with _$CategoryDaoMixin 
   
   // Get note count by category
   Future<int> getNoteCountByCategory(int categoryId) async {
-    final query = selectCount(db.notes)
-      ..where((note) => note.categoryId.equals(categoryId));
+    final query = selectCount(notes);
+    query.where((note) => note.categoryId.equals(categoryId));
     final result = await query.getSingle();
     return result;
   }

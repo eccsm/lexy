@@ -2,9 +2,11 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:voice_notes/api/models/transcription_response.dart';
-import 'package:voice_notes/api/models/note.dart';
-import 'package:voice_notes/database/models/note.dart';
+
+import '../database/models/note.dart';
+import 'models/note.dart';
+import 'models/transcription_response.dart';
+
 
 class ApiService {
   final Dio _dio;
@@ -61,7 +63,7 @@ class ApiService {
   }
   
   // Sync a note to the server
-  Future<ApiNote> syncNote(Note note) async {
+  Future<ApiNote> syncNote(Notes note) async {
     try {
       final response = await _dio.post(
         '/api/notes',

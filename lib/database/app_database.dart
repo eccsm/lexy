@@ -5,10 +5,11 @@ import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:voice_notes/database/daos/category_dao.dart';
-import 'package:voice_notes/database/daos/note_dao.dart';
-import 'package:voice_notes/database/daos/tag_dao.dart';
-import 'package:voice_notes/database/models/note.dart';
+import 'package:voicenotes/database/models/note.dart';
+
+import 'daos/category_dao.dart';
+import 'daos/note_dao.dart';
+import 'daos/tag_dao.dart';
 
 part 'app_database.g.dart';
 

@@ -1,8 +1,8 @@
 import 'package:drift/drift.dart';
-import 'package:voice_notes/database/app_database.dart';
-import 'package:voice_notes/database/models/note.dart';
+import 'package:voicenotes/database/app_database.dart';
+import 'package:voicenotes/database/models/note.dart';
 
-part 'note_dao.g.dart';
+part '../dao/note_dao.g.dart';
 
 @DriftAccessor(tables: [Notes, Categories, Tags, NoteTags])
 class NoteDao extends DatabaseAccessor<AppDatabase> with _$NoteDaoMixin {
@@ -16,8 +16,9 @@ class NoteDao extends DatabaseAccessor<AppDatabase> with _$NoteDaoMixin {
           categories,
           categories.id.equalsExp(notes.categoryId),
         ),
-      )
-      .orderBy([OrderingTerm.desc(notes.updatedAt)]);
+      );
+      
+    query.orderBy([OrderingTerm.desc(notes.updatedAt)]);
       
     return query.map((row) {
       return NoteWithCategory(
@@ -35,8 +36,9 @@ class NoteDao extends DatabaseAccessor<AppDatabase> with _$NoteDaoMixin {
           categories,
           categories.id.equalsExp(notes.categoryId),
         ),
-      )
-      .where(notes.id.equals(id));
+      );
+      
+    query.where(notes.id.equals(id));
       
     return query.map((row) {
       return NoteWithCategory(
@@ -54,11 +56,13 @@ class NoteDao extends DatabaseAccessor<AppDatabase> with _$NoteDaoMixin {
           categories,
           categories.id.equalsExp(notes.categoryId),
         ),
-      )
-      .where(
-        notes.title.like('%$searchTerm%').or(notes.content.like('%$searchTerm%')),
-      )
-      .orderBy([OrderingTerm.desc(notes.updatedAt)]);
+      );
+      
+    query.where(
+      notes.title.like('%$searchTerm%').or(notes.content.like('%$searchTerm%')),
+    );
+      
+    query.orderBy([OrderingTerm.desc(notes.updatedAt)]);
       
     return query.map((row) {
       return NoteWithCategory(
@@ -76,9 +80,10 @@ class NoteDao extends DatabaseAccessor<AppDatabase> with _$NoteDaoMixin {
           categories,
           categories.id.equalsExp(notes.categoryId),
         ),
-      )
-      .where(notes.categoryId.equals(categoryId))
-      .orderBy([OrderingTerm.desc(notes.updatedAt)]);
+      );
+      
+    query.where(notes.categoryId.equals(categoryId));
+    query.orderBy([OrderingTerm.desc(notes.updatedAt)]);
       
     return query.map((row) {
       return NoteWithCategory(

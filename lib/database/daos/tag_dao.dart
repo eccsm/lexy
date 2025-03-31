@@ -4,7 +4,7 @@ import '../app_database.dart';
 import '../models/note.dart';
 
 
-part 'tag_dao.g.dart';
+part '../dao/tag_dao.g.dart';
 
 @DriftAccessor(tables: [Tags, NoteTags, Notes])
 class TagDao extends DatabaseAccessor<AppDatabase> with _$TagDaoMixin {
@@ -87,3 +87,4 @@ class TagDao extends DatabaseAccessor<AppDatabase> with _$TagDaoMixin {
     
     return query.map((row) => row.readTable(notes)).get();
   }
+}
