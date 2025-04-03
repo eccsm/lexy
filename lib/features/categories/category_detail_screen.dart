@@ -46,7 +46,11 @@ class CategoryDetailScreen extends ConsumerWidget {
                   Icon(
                     Icons.note_alt_outlined,
                     size: 64,
-                    color: Colors.grey.withOpacity(0.5),
+                    color: Colors.grey.withValues(
+                    red: Colors.grey.r, 
+                    green: Colors.grey.g, 
+                    blue: Colors.grey.b, 
+                    alpha: 0.5),
                   ),
                   const SizedBox(height: 16),
                   Text(

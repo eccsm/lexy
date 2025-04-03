@@ -46,7 +46,12 @@ class ProfileScreen extends ConsumerWidget {
                   // User avatar
                   CircleAvatar(
                     radius: 50,
-                    backgroundColor: Theme.of(context).primaryColor.withOpacity(0.2),
+                    backgroundColor: Theme.of(context).primaryColor.withValues(
+                      red: Theme.of(context).primaryColor.r,
+                      green: Theme.of(context).primaryColor.g,
+                      blue: Theme.of(context).primaryColor.b,
+                      alpha: 0.2,
+                    ),
                     child: user.photoURL != null
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(50),

@@ -28,7 +28,7 @@ class _CategoryDialogState extends State<CategoryDialog> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.initialName ?? '');
-    _selectedColor = widget.initialColor ?? Colors.blue.value;
+    _selectedColor = widget.initialColor ?? Colors.blue.toARGB32();
     _selectedIcon = widget.initialIcon;
   }
 
@@ -112,7 +112,7 @@ class _CategoryDialogState extends State<CategoryDialog> {
                   return GestureDetector(
                     onTap: () {
                       setState(() {
-                        _selectedColor = color.value;
+                        _selectedColor = color.toARGB32();
                       });
                     },
                     child: Container(
@@ -122,15 +122,19 @@ class _CategoryDialogState extends State<CategoryDialog> {
                         color: color,
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: _selectedColor == color.value
+                          color: _selectedColor == color.toARGB32()
                               ? Colors.white
                               : Colors.transparent,
                           width: 2,
                         ),
-                        boxShadow: _selectedColor == color.value
+                        boxShadow: _selectedColor == color.toARGB32()
                             ? [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.3),
+                                  color: Colors.black.withValues(
+                                  red: Colors.black.r, 
+                                  green: Colors.black.g, 
+                                  blue: Colors.black.b, 
+                                  alpha: 0.3),
                                   blurRadius: 4,
                                   offset: const Offset(0, 2),
                                 ),
@@ -171,7 +175,11 @@ class _CategoryDialogState extends State<CategoryDialog> {
                         border: Border.all(
                           color: _selectedIcon == iconName
                               ? Colors.white
-                              : Colors.grey.withOpacity(0.5),
+                              : Colors.grey.withValues(
+                              red: Colors.grey.r, 
+                              green: Colors.grey.g, 
+                              blue: Colors.grey.b, 
+                              alpha: 0.5),
                           width: 1,
                         ),
                       ),

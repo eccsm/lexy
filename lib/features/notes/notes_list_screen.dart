@@ -59,18 +59,28 @@ class NotesListScreen extends ConsumerWidget {
                     // Category filters
                     ...categories.map((category) {
                       return Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
-                        child: FilterChip(
-                          label: Text(category.name),
-                          selected: selectedCategoryFilter == category.id,
-                          backgroundColor: Color(category.color).withOpacity(0.1),
-                          selectedColor: Color(category.color).withOpacity(0.3),
-                          onSelected: (selected) {
-                            ref.read(selectedCategoryFilterProvider.notifier).state = 
-                              selected ? category.id : null;
-                          },
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: FilterChip(
+                        label: Text(category.name),
+                        selected: selectedCategoryFilter == category.id,
+                        backgroundColor: Color(category.color).withValues(
+                          red: Color(category.color).r,
+                          green: Color(category.color).g,
+                          blue: Color(category.color).b,
+                          alpha: 0.1,
                         ),
-                      );
+                        selectedColor: Color(category.color).withValues(
+                          red: Color(category.color).r,
+                          green: Color(category.color).g,
+                          blue: Color(category.color).b,
+                          alpha: 0.3,
+                        ),
+                        onSelected: (selected) {
+                          ref.read(selectedCategoryFilterProvider.notifier).state =
+                            selected ? category.id : null;
+                        },
+                      ),
+                    );
                     }),
                   ],
                 );
@@ -97,7 +107,11 @@ class NotesListScreen extends ConsumerWidget {
                         Icon(
                           Icons.note_alt_outlined,
                           size: 64,
-                          color: Colors.grey.withOpacity(0.5),
+                          color: Colors.grey.withValues(
+                                  red: Colors.grey.r, 
+                                  green: Colors.grey.g, 
+                                  blue: Colors.grey.b, 
+                                  alpha: 0.5),
                         ),
                         const SizedBox(height: 16),
                         Text(

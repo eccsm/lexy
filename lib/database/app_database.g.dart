@@ -536,9 +536,17 @@ class Note extends DataClass implements Insertable<Note> {
   final String title;
   final String content;
   final String? audioPath;
+
+  /// Store timestamps as a DateTime in Drift.
+  /// That way, you can pass `DateTime.now()` directly with no conversion needed.
   final DateTime createdAt;
   final DateTime updatedAt;
+
+  /// `is_synced` is an integer 0 or 1 with a CHECK in raw SQL,
+  /// but we can store it as a bool in Drift:
   final bool isSynced;
+
+  /// Foreign key to categories(id)
   final int? categoryId;
   const Note({
     required this.id,

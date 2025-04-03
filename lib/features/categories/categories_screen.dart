@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:drift/drift.dart' hide Column;
-
 import '../../database/app_database.dart';
 import '../../shared/widgets/app_bar.dart';
 import '../notes/notes_controller.dart';
