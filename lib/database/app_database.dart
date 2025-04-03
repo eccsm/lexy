@@ -1,19 +1,23 @@
 import 'dart:io';
 import 'dart:ui';
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path/path.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 
 import 'daos/category_dao.dart';
 import 'daos/note_dao.dart';
 import 'daos/tag_dao.dart';
 import 'models/note.dart';
 
-part 'app_database.g.dart';  // This file will be generated
 
+import 'package:sqlite3/sqlite3.dart';
+import 'package:drift/native.dart';
+import 'package:drift/wasm.dart';
 
+import 'package:voicenotes/database/schema.dart';
+
+part 'app_database.g.dart';
 
 @DriftDatabase(tables: [Notes, Categories, Tags, NoteTags], daos: [CategoryDao, TagDao, NoteDao])
 class AppDatabase extends _$AppDatabase {
@@ -23,38 +27,46 @@ class AppDatabase extends _$AppDatabase {
   int get schemaVersion => 1;
 
   @override
-  MigrationStrategy get migration => MigrationStrategy(
-        onCreate: (Migrator m) async {
-          await m.createAll();
-          
-          // Create default categories
-          await into(categories).insert(
-            CategoriesCompanion.insert(
-              name: 'Work',
-              color: const Color(0xFF4CAF50).value,
-              icon: const Value('work'),
-            ),
-          );
+MigrationStrategy get migration => MigrationStrategy(
+      onCreate: (Migrator m) async {
+        // Use the generated schema creator instead of createAll()
+        await createV1(m);
+        
+        // Then seed your initial data as before
+        await into(categories).insert(
+          CategoriesCompanion.insert(
+            name: 'Work',
+            color: const Color(0xFF4CAF50).value,
+            icon: const Value('work'),
+          ),
+        );
 
-          await into(categories).insert(
-            CategoriesCompanion.insert(
-              name: 'Personal',
-              color: const Color(0xFF2196F3).value,
-              icon: const Value('person'),
-            ),
-          );
+        await into(categories).insert(
+          CategoriesCompanion.insert(
+            name: 'Personal',
+            color: const Color(0xFF2196F3).value,
+            icon: const Value('person'),
+          ),
+        );
 
-          await into(categories).insert(
-            CategoriesCompanion.insert(
-              name: 'Ideas',
-              color: const Color(0xFFFFC107).value,
-              icon: const Value('lightbulb'),
-            ),
-          );
-        },
-      );
+        await into(categories).insert(
+          CategoriesCompanion.insert(
+            name: 'Ideas',
+            color: const Color(0xFFFFC107).value,
+            icon: const Value('lightbulb'),
+          ),
+        );
+      },
+      onUpgrade: (Migrator m, int from, int to) async {
+        // This will be used in the future when you have more schema versions
+      },
+      beforeOpen: (details) async {
+        // Optional: validate the schema matches what we expect
+        await validateDatabaseSchema(details as QueryExecutor);
+      },
+    );
 
-  // Helpers for DAOs
+  // DAOs remain the same
   @override
   CategoryDao get categoryDao => CategoryDao(this);
   @override
@@ -62,7 +74,7 @@ class AppDatabase extends _$AppDatabase {
   @override
   NoteDao get noteDao => NoteDao(this);
   
-  // Note operations
+  // Keep all your existing database operations
   Future<List<NoteWithCategory>> getAllNotesWithCategory() async {
     final query = select(notes).join([
       leftOuterJoin(categories, categories.id.equalsExp(notes.categoryId)),
@@ -130,24 +142,48 @@ class AppDatabase extends _$AppDatabase {
   }
 }
 
-LazyDatabase _openConnection() {
-  return LazyDatabase(() async {
-    final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File(join(dbFolder.path, 'voice_notes.db'));
-    return NativeDatabase(file);
-  });
+// Platform-specific database connection
+QueryExecutor _openConnection() {
+  if (kIsWeb) {
+    return _connectWeb();
+  } else {
+    return _connectMobile();
+  }
 }
 
-// Provider
-final databaseProvider = Provider<AppDatabase>((ref) {
-  final database = AppDatabase();
-  
-  ref.onDispose(() async {
-    await database.close();
+// Web connection using WASM
+QueryExecutor _connectWeb() {
+  return DatabaseConnection.delayed(Future(() async {
+    final result = await WasmDatabase.open(
+      databaseName: 'voice_notes_db',
+      sqlite3Uri: Uri.parse('sqlite3.wasm'),
+      driftWorkerUri: Uri.parse('drift_worker.dart.js'),
+    );
+
+    if (result.missingFeatures.isNotEmpty) {
+      // Handle cases where certain browser features are unavailable
+      print('Using ${result.chosenImplementation} due to missing features: ${result.missingFeatures}');
+    }
+
+    return result.resolvedExecutor;
+  }));
+}
+
+
+// Mobile connection (iOS, Android, etc.)
+LazyDatabase _connectMobile() {
+  return LazyDatabase(() async {
+    final dbFolder = await getApplicationDocumentsDirectory();
+    final file = File(p.join(dbFolder.path, 'voice_notes.db'));
+
+
+    // Set proper temp directory
+    final cacheDir = await getTemporaryDirectory();
+    sqlite3.tempDirectory = cacheDir.path;
+
+    return NativeDatabase.createInBackground(file);
   });
-  
-  return database;
-});
+}
 
 // For use in the app
 class NoteWithCategory {

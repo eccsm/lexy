@@ -1,33 +1,30 @@
 name: voicenotes
 description: "A Flutter project for voice notes."
-
-publish_to: 'none' 
-
+publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.5.0 <3.6.0'
+  sdk: '>=3.7.0 <4.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
-
   # UI
   cupertino_icons: ^1.0.6
   flutter_animate: ^4.5.0
   google_fonts: ^6.1.0
   flutter_svg: ^2.0.9
-  lottie: ^2.7.0
+  lottie: ^3.3.1
   
   # State Management
   flutter_riverpod: ^2.4.10
   riverpod_annotation: ^2.3.4
-  
-  # Local Storage
-  path_provider: ^2.1.2
+    
+  # Database
+  drift: ^2.26.0
+  path_provider: ^2.1.5
   path: ^1.8.3
-  sqflite: ^2.3.0
-  ffi: ^2.0.2
+  sqlite3: ^2.4.2
   
   # Networking
   dio: ^5.4.0
@@ -37,40 +34,37 @@ dependencies:
   # Audio
   flutter_sound: ^9.2.13
   permission_handler: ^11.0.0
-  audio_session: ^0.1.18
+  audio_session: ^0.2.0
   
   # Authentication
-  firebase_core: ^2.24.2
-  firebase_auth: ^4.15.3
+  firebase_core: ^3.13.0
+  firebase_auth: ^5.5.2
   google_sign_in: ^6.1.6
   
   # Utils
-  intl: ^0.19.0
+  intl: ^0.20.2
   uuid: ^4.2.2
-  share_plus: ^7.2.1
+  share_plus: ^10.1.4
   url_launcher: ^6.2.2
   logger: ^2.0.2
-  package_info_plus: ^5.0.1
+  package_info_plus: ^8.3.0
 
   # Routing
-  go_router: ^13.0.0
-  sqlite3: ^2.4.2
-  drift: ^2.15.0
-  drift_dev: ^2.15.0
+  go_router: ^14.8.1
   
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
-  flutter_lints: ^3.0.1
+  drift_dev: ^2.26.0
   build_runner: ^2.4.7
+  flutter_lints: ^5.0.0
   json_serializable: ^6.7.1
-  retrofit_generator: ^8.0.5
+  retrofit_generator: ^9.1.9
   riverpod_generator: ^2.3.9
-  # Use a slightly older version of flutter_launcher_icons that's compatible with drift
-  flutter_launcher_icons: ^0.13.1
+  flutter_launcher_icons: ^0.14.3
   flutter_native_splash: ^2.3.8
-  
+  analyzer: ^7.3.0
+
 flutter:
   uses-material-design: true
   assets:
