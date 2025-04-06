@@ -7,7 +7,7 @@ class RecordButton extends StatelessWidget {
   final VoidCallback onPauseRecording;
   final VoidCallback onResumeRecording;
   final VoidCallback onStopRecording;
-
+  
   const RecordButton({
     super.key,
     required this.isRecording,
@@ -17,7 +17,7 @@ class RecordButton extends StatelessWidget {
     required this.onResumeRecording,
     required this.onStopRecording,
   });
-
+  
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -30,46 +30,49 @@ class RecordButton extends StatelessWidget {
           onPauseRecording();
         }
       },
+      onLongPress: isRecording ? onStopRecording : null,
       child: Container(
         width: 72,
         height: 72,
         decoration: BoxDecoration(
-          color: _getButtonColor(context),
+          color: _getButtonColor(),
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(
-              red: Colors.black.r, 
-              green: Colors.black.g, 
-              blue: Colors.black.b, 
-              alpha: 0.2),
+              color: Colors.black.withOpacity(0.2),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
           ],
         ),
         child: Center(
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            width: isRecording && !isPaused ? 24 : 36,
-            height: isRecording && !isPaused ? 24 : 36,
-            decoration: BoxDecoration(
-              color: isRecording ? Colors.white : Colors.red,
-              borderRadius: BorderRadius.circular(
-                isPaused ? 4 : 18,
-              ),
-            ),
+          child: Icon(
+            _getButtonIcon(),
+            size: 36,
+            color: Colors.white,
           ),
         ),
       ),
     );
   }
   
-  Color _getButtonColor(BuildContext context) {
-    if (isRecording) {
-      return isPaused ? Colors.amber : Colors.red;
+  Color _getButtonColor() {
+    if (!isRecording) {
+      return Colors.red;
+    } else if (isPaused) {
+      return Colors.orange;
     } else {
-      return Theme.of(context).primaryColor;
+      return Colors.red.shade800;
+    }
+  }
+  
+  IconData _getButtonIcon() {
+    if (!isRecording) {
+      return Icons.mic;
+    } else if (isPaused) {
+      return Icons.play_arrow;
+    } else {
+      return Icons.pause;
     }
   }
 }

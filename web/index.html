@@ -1,40 +1,24 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
-  <base href="$FLUTTER_BASE_HREF">
-
   <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
-
-  <!-- iOS meta tags & icons -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="voicenotes">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
-
   <title>voicenotes</title>
+
+  <!-- The default Flutter web manifest -->
   <link rel="manifest" href="manifest.json">
+
+  <!-- flutter.js automatically registers the service worker and loads your app -->
+  <script src="flutter.js" defer></script>
+
 </head>
 <body>
-  <script src="flutter_bootstrap.js" async></script>
-  <script src="sql/sqlite3.js" defer></script>
-  <script src="sql/worker.js" defer></script>
+
+  <!-- The main Dart code compiled to JavaScript -->
+  <script src="main.dart.js" type="application/javascript"></script>
+
+  <!-- If you’re using drift_worker.dart.js, you normally don’t need to load it via <script>.
+       Drift will fetch it as a web worker behind the scenes. 
+       You can just place drift_worker.dart.js in the same folder so it’s fetchable. -->
+
 </body>
 </html>

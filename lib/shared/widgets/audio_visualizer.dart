@@ -1,20 +1,14 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
 
 class AudioVisualizer extends StatefulWidget {
   final bool isRecording;
   final double amplitude;
-  final int barCount;
-  final Color activeColor;
-  final Color inactiveColor;
-
+  
   const AudioVisualizer({
     super.key,
     required this.isRecording,
     required this.amplitude,
-    this.barCount = 30,
-    this.activeColor = const Color(0xFF6750A4),
-    this.inactiveColor = Colors.grey,
   });
 
   @override
@@ -23,104 +17,98 @@ class AudioVisualizer extends StatefulWidget {
 
 class _AudioVisualizerState extends State<AudioVisualizer> with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
-  final List<double> _barHeights = [];
-  final Random _random = Random();
-
+  final List<double> _amplitudeHistory = List.filled(30, 0);
+  
   @override
   void initState() {
     super.initState();
-    
-    // Initialize bar heights
-    _resetBarHeights();
-    
-    // Set up animation controller
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 100),
+      duration: const Duration(milliseconds: 200),
     );
-    
-    _animationController.addListener(() {
-      if (widget.isRecording) {
-        _updateBarHeights();
-      }
-    });
-    
-    if (widget.isRecording) {
-      _animationController.repeat();
-    }
+    _animationController.repeat(reverse: true);
   }
-
-  @override
-  void didUpdateWidget(AudioVisualizer oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    
-    if (widget.isRecording != oldWidget.isRecording) {
-      if (widget.isRecording) {
-        _animationController.repeat();
-      } else {
-        _animationController.stop();
-        _resetBarHeights();
-      }
-    }
-    
-    if (widget.barCount != oldWidget.barCount) {
-      _resetBarHeights();
-    }
-  }
-
+  
   @override
   void dispose() {
     _animationController.dispose();
     super.dispose();
   }
-
-  void _resetBarHeights() {
-    _barHeights.clear();
-    for (int i = 0; i < widget.barCount; i++) {
-      _barHeights.add(0.1);
-    }
-  }
-
-  void _updateBarHeights() {
-    if (mounted) {
-      setState(() {
-        // Scale amplitude to a reasonable range (0.1 to 1.0)
-        final scaledAmplitude = 0.1 + min(0.9, widget.amplitude / 80);
-        
-        for (int i = 0; i < _barHeights.length; i++) {
-          if (widget.isRecording) {
-            // Create a randomized effect based on the amplitude
-            _barHeights[i] = 0.1 + (_random.nextDouble() * scaledAmplitude);
-          } else {
-            _barHeights[i] = 0.1;
-          }
-        }
-      });
-    }
-  }
-
+  
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 200,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: List.generate(
-          _barHeights.length,
-          (index) => AnimatedContainer(
-            duration: const Duration(milliseconds: 50),
-            width: 4,
-            height: 20 + (_barHeights[index] * 160),
-            decoration: BoxDecoration(
-              color: widget.isRecording
-                  ? widget.activeColor
-                  : widget.inactiveColor,
-              borderRadius: BorderRadius.circular(2),
-            ),
+    // Update amplitude history
+    if (widget.isRecording) {
+      _amplitudeHistory.removeAt(0);
+      _amplitudeHistory.add(widget.amplitude.isNaN ? 0 : widget.amplitude);
+    }
+    
+    return AnimatedBuilder(
+      animation: _animationController,
+      builder: (context, child) {
+        return CustomPaint(
+          size: const Size(double.infinity, 120),
+          painter: _AudioWaveformPainter(
+            isRecording: widget.isRecording,
+            amplitudeHistory: _amplitudeHistory,
+            animationValue: _animationController.value,
           ),
-        ),
-      ),
+        );
+      },
     );
   }
+}
+
+class _AudioWaveformPainter extends CustomPainter {
+  final bool isRecording;
+  final List<double> amplitudeHistory;
+  final double animationValue;
+  
+  _AudioWaveformPainter({
+    required this.isRecording,
+    required this.amplitudeHistory,
+    required this.animationValue,
+  });
+  
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = isRecording ? Colors.red : Colors.grey
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round;
+    
+    if (!isRecording) {
+      // Draw a flat line when not recording
+      canvas.drawLine(
+        Offset(0, size.height / 2),
+        Offset(size.width, size.height / 2),
+        paint,
+      );
+      return;
+    }
+    
+    // Draw the waveform
+    final barWidth = size.width / amplitudeHistory.length;
+    final center = size.height / 2;
+    
+    for (int i = 0; i < amplitudeHistory.length; i++) {
+      final amplitude = amplitudeHistory[i];
+      final normalized = math.min(amplitude / 60, 1.0);
+      
+      // Calculate bar height with slight animation
+      final barHeight = normalized * size.height * 0.8 * (1 + animationValue * 0.1);
+      
+      // Draw the bar
+      canvas.drawLine(
+        Offset(i * barWidth, center - barHeight / 2),
+        Offset(i * barWidth, center + barHeight / 2),
+        paint,
+      );
+    }
+  }
+  
+  @override
+  bool shouldRepaint(_AudioWaveformPainter oldDelegate) => 
+      isRecording || oldDelegate.isRecording || 
+      animationValue != oldDelegate.animationValue;
 }

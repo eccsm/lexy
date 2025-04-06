@@ -21,7 +21,7 @@ dependencies:
   riverpod_annotation: ^2.3.4
     
   # Database - Updated to compatible versions
-  drift: ^2.12.0
+  drift: ^2.26.0
   sqlite3: ^2.1.0
   sqlite3_flutter_libs: ^0.5.15
   path_provider: ^2.1.5
@@ -50,6 +50,7 @@ dependencies:
   url_launcher: ^6.2.2
   logger: ^2.0.2
   package_info_plus: ^8.3.0
+  http_parser: ^4.1.2
 
   # Routing
   go_router: ^14.8.1
@@ -57,7 +58,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  drift_dev: ^2.12.0
+  drift_dev: ^2.26.0
   build_runner: ^2.4.7
   flutter_lints: ^5.0.0
   json_serializable: ^6.7.1
