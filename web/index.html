@@ -1,24 +1,60 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <base href="$FLUTTER_BASE_HREF">
+
   <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="A voice notes application.">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="voicenotes">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <!-- Add Cross-Origin settings for shared array buffer support -->
+  <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
+  <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
+
   <title>voicenotes</title>
-
-  <!-- The default Flutter web manifest -->
   <link rel="manifest" href="manifest.json">
-
-  <!-- flutter.js automatically registers the service worker and loads your app -->
-  <script src="flutter.js" defer></script>
-
+  
+  <script>
+    // The value below is injected by flutter build, do not touch.
+    var serviceWorkerVersion = '{{flutter_service_worker_version}}';
+  </script>
+  <!-- This script adds the flutter initialization JS code -->
+  <script src="flutter.js"></script>
 </head>
 <body>
+  <script>
+    // Serve SQLite WASM file with the correct MIME type
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/flutter_service_worker.js?v=' + serviceWorkerVersion);
+    }
+    
+    window.addEventListener('load', function() {
+      // Download main.dart.js
+      _flutter = {
+        loader: {
+          file: "main.dart.js"
+        }
+      };
+      
+      var scriptLoaded = false;
+      function _loadEntrypoint() {
+        var scriptTag = document.createElement('script');
+        scriptTag.src = 'main.dart.js';
+        scriptTag.type = 'application/javascript';
+        document.body.appendChild(scriptTag);
+      }
 
-  <!-- The main Dart code compiled to JavaScript -->
-  <script src="main.dart.js" type="application/javascript"></script>
-
-  <!-- If you’re using drift_worker.dart.js, you normally don’t need to load it via <script>.
-       Drift will fetch it as a web worker behind the scenes. 
-       You can just place drift_worker.dart.js in the same folder so it’s fetchable. -->
-
+      _loadEntrypoint();
+    });
+  </script>
 </body>
 </html>
