@@ -43,27 +43,43 @@ class ApiService {
   
   // Transcribe audio using your existing Spring Boot endpoint
   Future<TranscriptionResponse> transcribeAudio(File audioFile, String? prompt) async {
-    try {
-      final formData = FormData.fromMap({
-        'file': await MultipartFile.fromFile(
-          audioFile.path,
-          filename: audioFile.path.split('/').last,
-        ),
-        'model': 'whisper-1',
-        if (prompt != null) 'prompt': prompt,
-      });
+  try {
+    final formData = FormData.fromMap({
+      'file': await MultipartFile.fromFile(
+        audioFile.path,
+        filename: audioFile.path.split('/').last,
+      ),
+      'model': 'whisper-1',
+      if (prompt != null) 'prompt': prompt,
+    });
+    
+    final response = await _dio.post(
+      '/api/audio/transcribe',
+      data: formData,
+      options: Options(
+        validateStatus: (status) => status! < 500, // Accept 400 responses to read error message
+      ),
+    );
+    
+    // Check if response indicates an error
+    if (response.statusCode == 400) {
+      final errorData = response.data;
+      String errorMessage = "Unknown error";
       
-      final response = await _dio.post(
-        '/api/audio/transcribe',
-        data: formData,
-      );
+      if (errorData is Map && errorData.containsKey('error')) {
+        errorMessage = errorData['error'];
+      }
       
-      return TranscriptionResponse.fromJson(response.data);
-    } catch (e) {
-      _logger.e('Error transcribing audio: $e');
-      throw Exception('Failed to transcribe audio: $e');
+      _logger.e('API error: $errorMessage');
+      throw Exception(errorMessage);
     }
+    
+    return TranscriptionResponse.fromJson(response.data);
+  } catch (e) {
+    _logger.e('Error transcribing audio: $e');
+    throw Exception('Failed to transcribe audio: $e');
   }
+}
   
   // Sync a note to the server
   Future<ApiNote> syncNote(Notes note) async {

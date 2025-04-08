@@ -1,3 +1,4 @@
+// record_button.dart
 import 'package:flutter/material.dart';
 
 class RecordButton extends StatelessWidget {
@@ -7,7 +8,7 @@ class RecordButton extends StatelessWidget {
   final VoidCallback onPauseRecording;
   final VoidCallback onResumeRecording;
   final VoidCallback onStopRecording;
-  
+
   const RecordButton({
     super.key,
     required this.isRecording,
@@ -17,62 +18,29 @@ class RecordButton extends StatelessWidget {
     required this.onResumeRecording,
     required this.onStopRecording,
   });
-  
+
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        if (!isRecording) {
-          onStartRecording();
-        } else if (isPaused) {
-          onResumeRecording();
-        } else {
-          onPauseRecording();
-        }
-      },
-      onLongPress: isRecording ? onStopRecording : null,
-      child: Container(
-        width: 72,
-        height: 72,
-        decoration: BoxDecoration(
-          color: _getButtonColor(),
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Center(
-          child: Icon(
-            _getButtonIcon(),
-            size: 36,
-            color: Colors.white,
-          ),
-        ),
-      ),
+    // Change icon and action based on the current state.
+    IconData icon;
+    VoidCallback onPressed;
+    if (!isRecording && !isPaused) {
+      icon = Icons.fiber_manual_record;
+      onPressed = onStartRecording;
+    } else if (isRecording && !isPaused) {
+      icon = Icons.pause;
+      onPressed = onPauseRecording;
+    } else if (isRecording && isPaused) {
+      icon = Icons.play_arrow;
+      onPressed = onResumeRecording;
+    } else {
+      icon = Icons.fiber_manual_record;
+      onPressed = onStartRecording;
+    }
+    return FloatingActionButton(
+      onPressed: onPressed,
+      backgroundColor: Colors.red,
+      child: Icon(icon, size: 32),
     );
-  }
-  
-  Color _getButtonColor() {
-    if (!isRecording) {
-      return Colors.red;
-    } else if (isPaused) {
-      return Colors.orange;
-    } else {
-      return Colors.red.shade800;
-    }
-  }
-  
-  IconData _getButtonIcon() {
-    if (!isRecording) {
-      return Icons.mic;
-    } else if (isPaused) {
-      return Icons.play_arrow;
-    } else {
-      return Icons.pause;
-    }
   }
 }
