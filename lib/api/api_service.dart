@@ -41,8 +41,8 @@ class ApiService {
     return null;
   }
   
-  // Transcribe audio using your existing Spring Boot endpoint
-  Future<TranscriptionResponse> transcribeAudio(File audioFile, String? prompt) async {
+  // Update the transcribeAudio method
+Future<TranscriptionResponse> transcribeAudio(File audioFile, String? prompt) async {
   try {
     final formData = FormData.fromMap({
       'file': await MultipartFile.fromFile(
@@ -50,6 +50,7 @@ class ApiService {
         filename: audioFile.path.split('/').last,
       ),
       'model': 'whisper-1',
+      'language': 'en', // Specify English as the language
       if (prompt != null) 'prompt': prompt,
     });
     
@@ -80,8 +81,38 @@ class ApiService {
     throw Exception('Failed to transcribe audio: $e');
   }
 }
+
+// Update the transcribeAudioBytes method
+Future<TranscriptionResponse> transcribeAudioBytes(
+  Uint8List audioBytes, {
+  required String fileName,
+  String? title,
+}) async {
+  try {
+    final formData = FormData.fromMap({
+      'file': MultipartFile.fromBytes(
+        audioBytes,
+        filename: fileName,
+        contentType: MediaType('audio', 'webm'),
+      ),
+      'model': 'whisper-1',
+      'language': 'en', // Specify English as the language
+      if (title != null) 'prompt': title,
+    });
+
+    final response = await _dio.post(
+      '/api/audio/transcribe',
+      data: formData,
+    );
+
+    return TranscriptionResponse.fromJson(response.data);
+  } catch (e) {
+    _logger.e('Error transcribing audio bytes: $e');
+    throw Exception('Failed to transcribe audio bytes: $e');
+  }
+}
   
-  // Sync a note to the server
+
   Future<ApiNote> syncNote(Notes note) async {
     try {
       final response = await _dio.post(
@@ -137,41 +168,15 @@ class ApiService {
       throw Exception('Failed to delete note: $e');
     }
   }
-
-  Future<TranscriptionResponse> transcribeAudioBytes(
-  Uint8List audioBytes, {
-  required String fileName,
-  String? title,
-}) async {
-  try {
-    final formData = FormData.fromMap({
-      'file': MultipartFile.fromBytes(
-        audioBytes,
-        filename: fileName,
-        contentType: MediaType('audio', 'webm'),
-      ),
-      'model': 'whisper-1',
-      if (title != null) 'prompt': title,
-    });
-
-    final response = await _dio.post(
-      '/api/audio/transcribe',
-      data: formData,
-    );
-
-    return TranscriptionResponse.fromJson(response.data);
-  } catch (e) {
-    _logger.e('Error transcribing audio bytes: $e');
-    throw Exception('Failed to transcribe audio bytes: $e');
   }
-}
-}
 
-// Provider
-final apiServiceProvider = Provider<ApiService>((ref) {
-  final dio = Dio();
+  final apiServiceProvider = Provider<ApiService>((ref) {
+  final dio = Dio(BaseOptions(
+    baseUrl: 'http://192.168.1.5:8080',
+    connectTimeout: Duration(seconds: 5), 
+    receiveTimeout: Duration(seconds: 5),
+  ));
   
-  // Add logging interceptor in debug mode
   dio.interceptors.add(LogInterceptor(
     requestBody: true,
     responseBody: true,
@@ -179,7 +184,8 @@ final apiServiceProvider = Provider<ApiService>((ref) {
   
   return ApiService(
     dio: dio,
-    baseUrl: 'http://10.0.2.2:8080', // Default for Android emulator to localhost
+    baseUrl: 'http://192.168.1.10:8080',
   );
 });
+
 

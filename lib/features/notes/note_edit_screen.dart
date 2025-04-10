@@ -42,7 +42,7 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
   
   Future<void> _loadNote() async {
     final noteWithCategory = await ref.read(
-      noteProvider(widget.noteId).future,
+      noteProvider(widget.noteId as int).future,
     );
     
     if (mounted) {
@@ -73,7 +73,7 @@ class _NoteEditScreenState extends ConsumerState<NoteEditScreen> {
     
     try {
       final noteWithCategory = await ref.read(
-        noteProvider(widget.noteId).future,
+        noteProvider(widget.noteId as int).future,
       );
       
       final updatedNote = noteWithCategory.note.copyWith(

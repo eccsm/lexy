@@ -21,7 +21,7 @@ class NotesListScreen extends ConsumerWidget {
     return Scaffold(
       appBar: const CustomAppBar(
         title: 'My Notes',
-        showProfileButton: true,
+        showProfileButton: true, 
       ),
       body: Column(
         children: [

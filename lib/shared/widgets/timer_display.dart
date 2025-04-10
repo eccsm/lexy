@@ -1,8 +1,6 @@
-// timer_display.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:voicenotes/features/recording/recording_controller.dart';
-
 
 class TimerDisplay extends ConsumerWidget {
   const TimerDisplay({super.key});
@@ -11,6 +9,7 @@ class TimerDisplay extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final recordingDuration = ref.watch(recordingControllerProvider).recordingDuration;
     final formattedDuration = _formatDuration(recordingDuration);
+    
     return Text(
       formattedDuration,
       style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),

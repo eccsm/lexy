@@ -4,13 +4,12 @@ import 'package:audio_session/audio_session.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_sound/flutter_sound.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:record/record.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:uuid/uuid.dart';
 import 'package:drift/drift.dart';
-import 'package:voicenotes/shared/utils/js_utils_stub.dart'
-    if (dart.library.html) 'package:voicenotes/shared/utils/js_utils.dart';
 
 import '../../api/api_service.dart';
 import '../../database/app_database.dart';
@@ -62,39 +61,30 @@ class RecordingController extends StateNotifier<RecordingState> {
   final ApiService _apiService;
   final AppDatabase _database;
 
-  FlutterSoundRecorder? _recorder;
+  // Use the audioRecorder package implementation
+  final _audioRecorder = AudioRecorder();
+  
+  // AudioPlayer from just_audio for playback
+  AudioPlayer? _player;
+  
   final TextEditingController titleController = TextEditingController();
 
   // Timer for updating the recording duration
   Timer? _durationTimer;
-
-  // Subscription to onProgress (for amplitude and progress updates)
-  StreamSubscription<RecordingDisposition>? _amplitudeSubscription;
+  Timer? _amplitudeTimer;
 
   // Minimum recording duration: 0.5 seconds
   static const Duration _minRecordingDuration = Duration(milliseconds: 500);
 
-  // Buffers & streams for in-memory recording (web)
-  final List<int> _recordedDataBuffer = [];
-  final StreamController<Uint8List> _recordedDataController =
-      StreamController<Uint8List>();
+  // For web recording - specific to the implementation
+  Uint8List? _webRecordedData;
 
   bool _isInitialized = false;
 
   RecordingController(this._apiService, this._database)
       : super(const RecordingState()) {
     _initRecorder();
-  }
-
-  /// Chooses the best codec for the current web browser, falling back to AAC.
-  Codec _getBestCodecForWeb() {
-    final userAgent = getUserAgent().toLowerCase();
-    if (userAgent.contains('chrome') || userAgent.contains('firefox')) {
-      return Codec.opusWebM; // opus in webm container
-    } else if (userAgent.contains('safari')) {
-      return Codec.aacMP4;   // Safari typically needs AAC in MP4
-    }
-    return Codec.aacADTS;    // fallback
+    _player = AudioPlayer();
   }
 
   /// Configure the audio session for Android/iOS (non-web).
@@ -142,19 +132,16 @@ class RecordingController extends StateNotifier<RecordingState> {
         }
         await _configureAudioSession();
       }
-
-      _recorder = FlutterSoundRecorder();
-
-      if (kIsWeb) {
-        debugPrint('Running on web: no explicit AudioSession configuration');
+      
+      // Check if the device supports recording
+      final isRecordingAvailable = await _audioRecorder.hasPermission();
+      if (!isRecordingAvailable) {
+        debugPrint('Recording is not available on this device');
+        state = state.copyWith(
+          errorMessage: 'Recording is not available on this device',
+        );
+        return;
       }
-
-      // Open the recorder
-      await _recorder?.openRecorder();
-      debugPrint('Recorder opened successfully');
-
-      // We want amplitude updates every 100ms
-      await _recorder?.setSubscriptionDuration(const Duration(milliseconds: 100));
 
       _isInitialized = true;
       debugPrint('Recorder initialized successfully');
@@ -167,78 +154,72 @@ class RecordingController extends StateNotifier<RecordingState> {
   }
 
   Future<void> startRecording() async {
-  if (state.isRecording) return;
+    if (state.isRecording) return;
 
-  try {
-    if (!_isInitialized) {
-      await _initRecorder();
+    try {
+      if (!_isInitialized) {
+        await _initRecorder();
+      }
+
+      // Create a path for saving the recording
+      String? path;
+      if (!kIsWeb) {
+        final directory = await getTemporaryDirectory();
+        // Use .m4a extension for compatible format
+        path = '${directory.path}/${const Uuid().v4()}.m4a';
+        debugPrint('Recording to path: $path');
+      } else {
+        // For web, we'll just use a temporary name
+        path = 'temp_recording_${DateTime.now().millisecondsSinceEpoch}.webm';
+      }
+
+      // Configure recording options
+      final recorderConfig = const RecordConfig(
+        encoder: AudioEncoder.aacLc,  // AAC-LC encoder is widely compatible
+        bitRate: 32000,
+        sampleRate: 16000,
+        numChannels: 1,
+      );
+      
+      // Start recording
+      await _audioRecorder.start(
+        recorderConfig, 
+        path: path
+      );
+
+      // Update state
+      state = state.copyWith(
+        isRecording: true,
+        isPaused: false,
+        filePath: path,
+        recordingDuration: Duration.zero,
+        errorMessage: null,
+      );
+      
+      // Start timers for updating UI
+      _startTimers();
+      
+    } catch (e) {
+      debugPrint('Error starting recording: $e');
+      state = state.copyWith(
+        errorMessage: 'Failed to start recording: $e',
+        isRecording: false,
+        isPaused: false,
+      );
     }
-    if (_recorder == null) {
-      debugPrint('Recorder is null, cannot start recording');
-      state = state.copyWith(errorMessage: 'Recorder not initialized');
-      return;
-    }
-
-    _recordedDataBuffer.clear();
-    if (kIsWeb) {
-      _recordedDataController.stream.listen((data) {
-        _recordedDataBuffer.addAll(data);
-      });
-    }
-
-    String? path;
-    if (!kIsWeb) {
-      final directory = await getTemporaryDirectory();
-      // Use .m4a extension for AAC-MP4
-      path = '${directory.path}/${const Uuid().v4()}.m4a';
-      debugPrint('Recording to path: $path');
-    }
-
-    // Use Codec.aacMP4 so it's recognized as .m4a (MP4 container)
-    final codec = kIsWeb ? _getBestCodecForWeb() : Codec.aacMP4;
-
-    await _recorder?.startRecorder(
-      codec: codec,
-      toFile: path,
-      toStream: kIsWeb ? _recordedDataController.sink : null,
-      audioSource: AudioSource.microphone,
-      bitRate: 32000,
-      sampleRate: 16000,
-      numChannels: 1,
-    );
-
-    state = state.copyWith(
-      isRecording: true,
-      isPaused: false,
-      filePath: path,
-      recordingDuration: Duration.zero,
-      errorMessage: null,
-    );
-    
-    // Start timers & amplitude subscription
-    _startTimers();
-    _amplitudeSubscription = _recorder?.onProgress?.listen((event) {
-      final decibels = event.decibels ?? 0.0;
-      state = state.copyWith(currentAmplitude: decibels);
-    });
-  } catch (e) {
-    debugPrint('Error starting recording: $e');
-    state = state.copyWith(
-      errorMessage: 'Failed to start recording: $e',
-      isRecording: false,
-      isPaused: false,
-    );
   }
-}
-
 
   /// Pause the recording
   Future<void> pauseRecording() async {
-    if (!state.isRecording || state.isPaused || _recorder == null) return;
+    if (!state.isRecording || state.isPaused) return;
+    
     try {
+      // Pause recording
+      await _audioRecorder.pause();
+      
       state = state.copyWith(isPaused: true);
       _stopTimers();
-      await _recorder?.pauseRecorder();
+      
       debugPrint('Recording paused');
     } catch (e) {
       debugPrint('Error pausing recording: $e');
@@ -255,14 +236,14 @@ class RecordingController extends StateNotifier<RecordingState> {
 
   /// Resume the recording
   Future<void> resumeRecording() async {
-    if (!state.isPaused || _recorder == null) return;
+    if (!state.isPaused) return;
+    
     try {
-      await _recorder?.resumeRecorder();
+      await _audioRecorder.resume();
+      
       state = state.copyWith(isPaused: false);
       _startTimers();
-      _amplitudeSubscription = _recorder?.onProgress?.listen((event) {
-        state = state.copyWith(currentAmplitude: event.decibels ?? 0.0);
-      });
+      
       debugPrint('Recording resumed');
     } catch (e) {
       debugPrint('Error resuming recording: $e');
@@ -276,7 +257,7 @@ class RecordingController extends StateNotifier<RecordingState> {
 
   /// Stop the recording, then process or transcribe the result.
   Future<void> stopRecording() async {
-    if ((!state.isRecording && !state.isPaused) || _recorder == null) return;
+    if (!state.isRecording && !state.isPaused) return;
 
     try {
       // Check duration first
@@ -289,12 +270,14 @@ class RecordingController extends StateNotifier<RecordingState> {
       }
 
       _stopTimers();
-      final path = await _recorder?.stopRecorder();
+      
+      // Stop recording
+      final path = await _audioRecorder.stop();
       debugPrint('Recording stopped, path: $path');
 
       // Handle non-web
-      if (!kIsWeb && state.filePath != null) {
-        final file = File(state.filePath!);
+      if (!kIsWeb && path != null) {
+        final file = File(path);
         if (await file.exists()) {
           final fileSize = await file.length();
           debugPrint('Recorded file size: $fileSize bytes');
@@ -307,15 +290,15 @@ class RecordingController extends StateNotifier<RecordingState> {
             return;
           }
           // Process if valid
-          await _processRecording(filePath: state.filePath!);
+          await _processRecording(filePath: path);
         } else {
-          debugPrint('ERROR: File not found at ${state.filePath}');
+          debugPrint('ERROR: File not found at $path');
           state = state.copyWith(errorMessage: 'Recording file not found');
         }
       }
       // Handle web
-      else if (kIsWeb && _recordedDataBuffer.isNotEmpty) {
-        final recordedBytes = Uint8List.fromList(_recordedDataBuffer);
+      else if (kIsWeb && _webRecordedData != null) {
+        final recordedBytes = _webRecordedData!;
         state = state.copyWith(inMemoryData: recordedBytes);
         if (recordedBytes.lengthInBytes < 1000) {
           state = state.copyWith(
@@ -324,14 +307,19 @@ class RecordingController extends StateNotifier<RecordingState> {
           return;
         }
         await _processRecording(inMemoryData: recordedBytes);
+      } else if (path != null) {
+        // For web with a path but no byte data
+        await _processRecording(filePath: path);
       } else {
-        debugPrint('ERROR: No valid recording data after stopping');
+        debugPrint('ERROR: No valid recording data');
         state = state.copyWith(errorMessage: 'No valid recording data');
       }
 
       // Reset and clear
       state = const RecordingState();
       titleController.clear();
+      _webRecordedData = null;
+      
     } catch (e) {
       debugPrint('Error stopping recording: $e');
       state = state.copyWith(errorMessage: 'Error stopping recording: $e');
@@ -340,10 +328,11 @@ class RecordingController extends StateNotifier<RecordingState> {
 
   /// Cancel the recording. Deletes the file if it exists.
   Future<void> cancelRecording() async {
-    if ((!state.isRecording && !state.isPaused) || _recorder == null) return;
+    if (!state.isRecording && !state.isPaused) return;
+    
     try {
       _stopTimers();
-      await _recorder?.stopRecorder();
+      await _audioRecorder.stop();
 
       if (!kIsWeb && state.filePath != null) {
         final file = File(state.filePath!);
@@ -353,7 +342,7 @@ class RecordingController extends StateNotifier<RecordingState> {
         }
       }
 
-      _recordedDataBuffer.clear();
+      _webRecordedData = null;
       state = const RecordingState();
       titleController.clear();
       debugPrint('Recording cancelled');
@@ -363,13 +352,31 @@ class RecordingController extends StateNotifier<RecordingState> {
     }
   }
 
-  /// Start a 100ms timer to track total recording duration
+  /// Start a 100ms timer to track total recording duration and amplitude
   void _startTimers() {
     _stopTimers(); // ensure no duplicates
+    
+    // Duration timer
     _durationTimer = Timer.periodic(const Duration(milliseconds: 100), (_) {
-      final newDuration =
-          state.recordingDuration + const Duration(milliseconds: 100);
+      final newDuration = state.recordingDuration + const Duration(milliseconds: 100);
       state = state.copyWith(recordingDuration: newDuration);
+    });
+    
+    // Amplitude timer - to get current audio levels
+    _amplitudeTimer = Timer.periodic(const Duration(milliseconds: 200), (_) async {
+      if (state.isRecording && !state.isPaused) {
+        try {
+          // Get amplitude
+          final amplitude = await _audioRecorder.getAmplitude();
+          // Update state with current amplitude (normalized to 0-1 range)
+          state = state.copyWith(
+            currentAmplitude: (amplitude.current + 160) / 160, // Normalize from dB
+          );
+        } catch (e) {
+          // Just ignore amplitude errors
+          debugPrint('Error getting amplitude: $e');
+        }
+      }
     });
   }
 
@@ -377,8 +384,8 @@ class RecordingController extends StateNotifier<RecordingState> {
   void _stopTimers() {
     _durationTimer?.cancel();
     _durationTimer = null;
-    _amplitudeSubscription?.cancel();
-    _amplitudeSubscription = null;
+    _amplitudeTimer?.cancel();
+    _amplitudeTimer = null;
   }
 
   /// Process the recording (transcription + saving to DB).
@@ -436,20 +443,27 @@ class RecordingController extends StateNotifier<RecordingState> {
       // 2) File path (non-web)
       else if (filePath != null) {
         final file = File(filePath);
-        if (!await file.exists()) {
+        if (!kIsWeb && !await file.exists()) {
           debugPrint('ERROR: File does not exist: $filePath');
           state = state.copyWith(errorMessage: 'Recording file not found');
           return;
         }
 
         try {
-          final fileSize = await file.length();
+          final fileSize = !kIsWeb ? await file.length() : 0;
           debugPrint('File size: $fileSize bytes before transcription');
 
-          final transcription = await _apiService.transcribeAudio(
-            file,
-            title.isNotEmpty ? title : null,
-          );
+          final transcription = !kIsWeb 
+              ? await _apiService.transcribeAudio(
+                  file,
+                  title.isNotEmpty ? title : null,
+                )
+              : await _apiService.transcribeAudioBytes(
+                  await file.readAsBytes(),
+                  fileName: file.path.split('/').last,
+                  title: title.isNotEmpty ? title : null,
+                );
+
           await _database.noteDao.insertNote(
             NotesCompanion.insert(
               title: title.isNotEmpty ? title : defaultTitle,
@@ -487,6 +501,38 @@ class RecordingController extends StateNotifier<RecordingState> {
     }
   }
 
+  /// Play audio from a file path
+  Future<void> playAudio(String filePath) async {
+    try {
+      await _player?.setFilePath(filePath);
+      await _player?.play();
+    } catch (e) {
+      debugPrint('Error playing audio: $e');
+      throw Exception('Failed to play audio: $e');
+    }
+  }
+
+  /// Pause audio playback
+  Future<void> pauseAudio() async {
+    await _player?.pause();
+  }
+
+  /// Resume audio playback
+  Future<void> resumeAudio() async {
+    await _player?.play();
+  }
+
+  /// Stop audio playback
+  Future<void> stopAudio() async {
+    await _player?.stop();
+  }
+
+  /// Get current playback position
+  Stream<Duration> get positionStream => _player?.positionStream ?? Stream.value(Duration.zero);
+
+  /// Get total duration of the audio file
+  Duration? get totalDuration => _player?.duration;
+
   /// Clear the current error message from state
   void clearErrorMessage() {
     if (state.errorMessage != null) {
@@ -496,19 +542,16 @@ class RecordingController extends StateNotifier<RecordingState> {
 
   @override
   void dispose() {
-    // Stop timers/subscriptions
+    // Stop timers
     _stopTimers();
 
-    // Close the data stream
-    try {
-      _recordedDataController.close();
-    } catch (_) {
-      // If already closed, ignore
-    }
-
     // Release recorder resources
-    _recorder?.closeRecorder();
-    _recorder = null;
+    _audioRecorder.dispose();
+    
+    // Release player resources
+    _player?.dispose();
+    _player = null;
+    
     _isInitialized = false;
 
     titleController.dispose();

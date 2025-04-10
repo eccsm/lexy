@@ -27,7 +27,7 @@ GoRouter createRouter(Ref ref) { {
         path: '/notes/:id',
         builder: (context, state) {
           final noteId = state.pathParameters['id'] ?? '';
-          return NoteDetailScreen(noteId: noteId);
+          return NoteDetailScreen(noteIdStr: noteId,);
         },
       ),
       

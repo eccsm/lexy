@@ -14,7 +14,7 @@ dependencies:
   flutter_animate: ^4.5.0
   google_fonts: ^6.1.0
   flutter_svg: ^2.0.9
-  lottie: ^3.3.1
+  lottie: ^3.3.0
   
   # State Management
   flutter_riverpod: ^2.4.10
@@ -34,10 +34,9 @@ dependencies:
   json_annotation: ^4.8.1
   
   # Audio
-  flutter_sound: ^9.2.13
-  permission_handler: ^11.0.0
-  audio_session: ^0.2.0
-  flutter_sound_record_web: ^0.3.2
+  just_audio: ^0.9.46  # For audio playback
+  record: ^5.0.1       # For audio recording
+  audio_session: ^0.1.25
   
   # Authentication
   firebase_core: ^3.13.0
@@ -53,6 +52,12 @@ dependencies:
   package_info_plus: ^8.3.0
   http_parser: ^4.1.2
   flutter_hooks: ^0.21.2
+  permission_handler: ^11.0.0
+  
+  # Exporting
+  pdf: ^3.11.3
+  printing: ^5.14.2
+  docx_template: ^0.4.0
 
   # Routing
   go_router: ^14.8.1
@@ -80,3 +85,5 @@ flutter:
     - assets/images/
     - assets/animations/
     - assets/icons/
+    - assets/templates/
+    - assets/fonts/
