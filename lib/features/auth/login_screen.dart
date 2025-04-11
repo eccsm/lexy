@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
+import 'dart:io' show Platform;
 
 import '../../shared/widgets/custom_button.dart';
 import 'auth_controller.dart';
@@ -16,6 +18,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _nameController = TextEditingController();
   bool _isLoading = false;
   bool _isLogin = true; // true for login, false for signup
   bool _obscurePassword = true;
@@ -24,6 +27,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _nameController.dispose();
     super.dispose();
   }
 
@@ -54,6 +58,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         await ref.read(authControllerProvider.notifier).signUpWithEmail(
               _emailController.text.trim(),
               _passwordController.text,
+              displayName: _nameController.text.trim(),
             );
       }
 
@@ -87,6 +92,68 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     try {
       await ref.read(authControllerProvider.notifier).signInWithGoogle();
+
+      // Navigate to notes screen on success
+      if (mounted) {
+        context.go('/notes');
+      }
+    } catch (e) {
+      // Show error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _signInWithApple() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await ref.read(authControllerProvider.notifier).signInWithApple();
+
+      // Navigate to notes screen on success
+      if (mounted) {
+        context.go('/notes');
+      }
+    } catch (e) {
+      // Show error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _signInWithMeta() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await ref.read(authControllerProvider.notifier).signInWithMeta();
 
       // Navigate to notes screen on success
       if (mounted) {
@@ -174,7 +241,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   
                   // App name
                   Text(
-                    'VoiceNotes',
+                    'Lexa',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                           fontWeight: FontWeight.bold,
@@ -190,6 +257,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     style: Theme.of(context).textTheme.bodyLarge,
                   ),
                   const SizedBox(height: 48),
+                  
+                  // Name field (only for signup)
+                  if (!_isLogin)
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Full Name',
+                        prefixIcon: Icon(Icons.person),
+                      ),
+                      textCapitalization: TextCapitalization.words,
+                      validator: (value) {
+                        if (!_isLogin && (value == null || value.isEmpty)) {
+                          return 'Please enter your name';
+                        }
+                        return null;
+                      },
+                    ),
+                  if (!_isLogin) const SizedBox(height: 16),
                   
                   // Email field
                   TextFormField(
@@ -260,17 +345,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     isLoading: _isLoading,
                     text: _isLogin ? 'Login' : 'Sign Up',
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
                   
-                  // Google Sign In
-                  OutlinedButton.icon(
-                    onPressed: _isLoading ? null : _signInWithGoogle,
-                    icon: Image.asset(
-                      'assets/images/google_logo.png',
-                      height: 24,
-                    ),
-                    label: const Text('Continue with Google'),
+                  // Divider with text
+                  Row(
+                    children: [
+                      const Expanded(child: Divider(thickness: 1)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          'OR',
+                          style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                                color: Colors.grey,
+                              ),
+                        ),
+                      ),
+                      const Expanded(child: Divider(thickness: 1)),
+                    ],
                   ),
+                  const SizedBox(height: 24),
+                  
+                  // Social sign-in buttons
+                  _buildSocialSignInButtons(),
+                  
                   const SizedBox(height: 24),
                   
                   // Toggle login/signup
@@ -298,4 +395,58 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       ),
     );
   }
+  
+  Widget _buildSocialSignInButtons() {
+  return Column(
+    children: [
+      // Google Sign In
+      SizedBox(
+        width: double.infinity,
+        child: OutlinedButton.icon(
+          onPressed: _isLoading ? null : _signInWithGoogle,
+          icon: const FaIcon(
+            FontAwesomeIcons.google,
+            size: 20,
+          ),
+          label: const Text('Continue with Google'),
+          style: OutlinedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+          ),
+        ),
+      ),
+      const SizedBox(height: 12),
+      
+      // Apple Sign In (only on iOS)
+      if (Platform.isIOS)
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: _isLoading ? null : _signInWithApple,
+            icon: const Icon(Icons.apple, size: 20),
+            label: const Text('Continue with Apple'),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+            ),
+          ),
+        ),
+      if (Platform.isIOS) const SizedBox(height: 12),
+      
+      // Meta (Facebook) Sign In
+      SizedBox(
+        width: double.infinity,
+        child: OutlinedButton.icon(
+          onPressed: _isLoading ? null : _signInWithMeta,
+          icon: const FaIcon(
+            FontAwesomeIcons.meta,
+            size: 20,
+          ),
+          label: const Text('Continue with Meta'),
+          style: OutlinedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+          ),
+        ),
+      ),
+    ],
+  );
+}
 }

@@ -20,8 +20,7 @@ android {
 
     defaultConfig {
         applicationId = "net.casim.voicenotes"
-        // Explicitly set minSdkVersion:
-        minSdkVersion 24
+        minSdkVersion 23
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -32,6 +31,11 @@ android {
             signingConfig = signingConfigs.debug
         }
     }
+
+    dependencies {
+    implementation 'com.facebook.android:facebook-android-sdk:latest.release'
+}
+
 }
 
 flutter {

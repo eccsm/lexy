@@ -6,15 +6,47 @@ version: 1.0.0+1
 environment:
   sdk: '>=3.7.0 <4.0.0'
 
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  remove_alpha_ios: true
+  image_path: "assets/icons/app_icon.png"
+  min_sdk_android: 21
+  web:
+    generate: false
+  windows:
+    generate: false
+  macos:
+    generate: false
+
+flutter_native_splash:
+  color: "#c988be"
+  image: assets/images/company_logo.png
+  fullscreen: true
+  android_gravity: fill 
+  ios_content_mode: scaleAspectFill
+  web: false
+
+  android_12:
+    color: "#c988be"
+    image: assets/images/company_logo.png
+    fullscreen: true
+    android_gravity: fill
+    ios_content_mode: scaleAspectFill
+
+  
 dependencies:
   flutter:
     sdk: flutter
+
   # UI
   cupertino_icons: ^1.0.6
   flutter_animate: ^4.5.0
   google_fonts: ^6.1.0
   flutter_svg: ^2.0.9
   lottie: ^3.3.0
+  font_awesome_flutter: ^10.8.0
+  splash_master: ^0.0.2
   
   # State Management
   flutter_riverpod: ^2.4.10
@@ -42,6 +74,9 @@ dependencies:
   firebase_core: ^3.13.0
   firebase_auth: ^5.5.2
   google_sign_in: ^6.1.6
+  sign_in_with_apple: ^7.0.1
+  flutter_login_facebook: ^2.0.1
+  cloud_firestore: ^5.6.6
   
   # Utils
   intl: ^0.20.2
@@ -61,6 +96,9 @@ dependencies:
 
   # Routing
   go_router: ^14.8.1
+
+  #Subscription
+  in_app_purchase: ^3.2.1
   
 dev_dependencies:
   flutter_test:
@@ -72,7 +110,7 @@ dev_dependencies:
   retrofit_generator: ^9.1.9
   riverpod_generator: ^2.3.9
   flutter_launcher_icons: ^0.14.3
-  flutter_native_splash: ^2.3.8
+  flutter_native_splash: ^2.4.4
   analyzer: ^7.3.0
 
 flutter:
@@ -87,3 +125,4 @@ flutter:
     - assets/icons/
     - assets/templates/
     - assets/fonts/
+    

@@ -11,10 +11,36 @@ import 'features/notes/notes_list_screen.dart';
 import 'features/profile/profile_screen.dart';
 import 'features/recording/recording_screen.dart';
 import 'features/settings/settings_screen.dart';
+import 'features/subscription/subscription_screen.dart';
+import 'features/auth/services/user_profile_service.dart';
 
-GoRouter createRouter(Ref ref) { {
+GoRouter createRouter(Ref ref) {
+  // Check if the user is logged in
+  final currentUserProfile = ref.watch(currentUserProfileProvider);
+  
+  // Redirect to login if not logged in (except for login page)
+  String? redirectIfNotLoggedIn(BuildContext context, GoRouterState state) {
+    if (currentUserProfile.isLoading) return null; // Still loading, don't redirect
+    
+    final isLoggedIn = currentUserProfile.value != null;
+    final isLoggingIn = state.uri.path == '/login';
+    
+    // If not logged in and not on login page, redirect to login
+    if (!isLoggedIn && !isLoggingIn) {
+      return '/login';
+    }
+    
+    // If logged in and on login page, redirect to notes
+    if (isLoggedIn && isLoggingIn) {
+      return '/notes';
+    }
+    
+    return null; // No redirection needed
+  }
+  
   return GoRouter(
     initialLocation: '/notes',
+    redirect: redirectIfNotLoggedIn,
     routes: [
       // Notes list (main screen)
       GoRoute(
@@ -27,7 +53,7 @@ GoRouter createRouter(Ref ref) { {
         path: '/notes/:id',
         builder: (context, state) {
           final noteId = state.pathParameters['id'] ?? '';
-          return NoteDetailScreen(noteIdStr: noteId,);
+          return NoteDetailScreen(noteIdStr: noteId);
         },
       ),
       
@@ -73,6 +99,12 @@ GoRouter createRouter(Ref ref) { {
         builder: (context, state) => const SettingsScreen(),
       ),
       
+      // Subscription screen
+      GoRoute(
+        path: '/subscription',
+        builder: (context, state) => const SubscriptionScreen(),
+      ),
+      
       // Login screen
       GoRoute(
         path: '/login',
@@ -87,5 +119,4 @@ GoRouter createRouter(Ref ref) { {
       ),
     ),
   );
-}
 }
