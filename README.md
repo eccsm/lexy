@@ -2,9 +2,6 @@
 
 A simple yet powerful voice note-taking application built with Flutter. Record your thoughts, meetings, or memos easily, transcribe them to text, and manage your notes effectively.
 
-![App Screenshot Placeholder](placeholder.png) 
-*(Suggestion: Replace placeholder.png with an actual screenshot URL or path once you have one)*
-
 ## Description
 
 VoiceNotes aims to provide a seamless experience for capturing audio notes on the go. It allows users to record audio, store it locally, optionally transcribe the audio to text using device capabilities, and export notes. The app integrates unobtrusive ads using AdMob to support its development.
@@ -141,8 +138,4 @@ voicenotes/
 ├── pubspec.yaml      # Project dependencies and metadata
 ├── README.md         # This file
 └── ...               # Other configuration files (e.g., .gitignore, analysis_options.yaml)
-
-## Contributing
-
-Contributions are welcome! If you'd like to contribute, please fork the repository and use a feature branch. Pull requests are warmly welcome. (Optional: Add more specific contribution guidelines if desired.)
 
