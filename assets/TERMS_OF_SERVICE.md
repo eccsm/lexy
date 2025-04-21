@@ -15,4 +15,4 @@ By using the VoiceNotes app, you agree to the following terms:
 **Contact:**
 For questions, email [support@lexy.com](mailto:ekincan@casim.com).
 
-See more at our [GitHub repository](https://github.com/eccsm/vapp).
+See more at our [GitHub repository](https://github.com/eccsm/lexy).
