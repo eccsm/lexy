@@ -37,7 +37,7 @@ VoiceNotes aims to provide a seamless experience for capturing audio notes on th
 
 ## Getting Started
 
-Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
+You can follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
 
 ### Prerequisites
 
@@ -82,7 +82,7 @@ Follow these instructions to get a copy of the project up and running on your lo
         storePassword=<your-keystore-password>
         keyPassword=<your-key-password>
         keyAlias=<your-alias-name>
-        storeFile=<relative-path/to/your/keystore-name.jks> 
+        storeFile <relative-path/to/your/keystore-name.jks> 
         ```
         *(Ensure `storeFile` path is correct relative to the `key.properties` file)*.
     *   **Add `key.properties` to your `.gitignore` file!** Do not commit sensitive credentials.
@@ -102,16 +102,16 @@ Follow these instructions to get a copy of the project up and running on your lo
     *   The output `.aab` file will be located in `build/app/outputs/bundle/release/`. This is the file you upload to the Google Play Store.
 7.  **Build APK (Optional):**
     ```bash
-    flutter build apk --release
+    flutter build apk-- release
     ```
     *   The output `.apk` file will be in `build/app/outputs/flutter-apk/`.
 
 ## Privacy Policy
 
-A privacy policy is required for app stores. A template [privacy_policy.html](web/privacy_policy.html) is included in the `/web` directory.
+App stores require a privacy policy. The `/web` directory includes a template [privacy_policy.html](web/privacy_policy.html).
 1.  **Customize:** Edit `web/privacy_policy.html` with your specific details (developer name, contact email, effective date) and ensure it accurately reflects your data handling practices.
 2.  **Deploy:** Host this file (e.g., using Firebase Hosting).
-    *   `firebase login` (if needed, run in your own terminal)
+    *   `firebase login` (if needed, run in your terminal)
     *   `firebase init hosting` (configure for the `web` directory)
     *   `firebase deploy --only hosting`
 3.  **URL:** Use the generated URL (e.g., `https://<your-project-id>.web.app/privacy_policy.html`) in the Google Play Console.
@@ -121,7 +121,7 @@ A privacy policy is required for app stores. A template [privacy_policy.html](we
 ```
 voicenotes/
 ├── android/          # Android specific files
-├── ios/              # iOS specific files (if targeting iOS)
+├── ios/              # iOS-specific files (if targeting iOS)
 ├── lib/              # Dart code
 │   ├── core/         # Core utilities, constants, themes
 │   ├── features/     # Feature-specific modules (e.g., notes, auth, settings)
@@ -131,7 +131,7 @@ voicenotes/
 │   ├── services/     # Business logic services (e.g., AdMobService, TranscriptionService)
 │   ├── utils/        # Utility functions
 │   └── main.dart     # App entry point
-├── assets/           # App assets (images, fonts, lottie files)
+├── assets/           # App assets (images, fonts, Lottie files)
 │   ├── fonts/
 │   ├── images/
 │   └── lottie/
@@ -144,8 +144,5 @@ voicenotes/
 
 ## Contributing
 
-Contributions are welcome! If you'd like to contribute, please fork the repository and use a feature branch. Pull requests are warmly welcome. (Optional: Add more specific contribution guidelines if desired).
+Contributions are welcome! If you'd like to contribute, please fork the repository and use a feature branch. Pull requests are warmly welcome. (Optional: Add more specific contribution guidelines if desired.)
 
-## License
-
-(Optional: Specify a license, e.g., MIT License)
